@@ -39,8 +39,10 @@ export class Game extends Phaser.Scene {
     saltareAudio: any;
     danno: any;
     temaMorte: any;
-    sonoPieca:any;
+    sonoPieca: any;
     suoloCollisione: Phaser.Physics.Arcade.StaticBody;
+    private estEnPause: boolean = false;
+    private menuPause: Phaser.GameObjects.Container;
 
     constructor() {
         super('Game');
@@ -105,7 +107,7 @@ export class Game extends Phaser.Scene {
 
         this.forestaSono = this.sound.add('foresta', { loop: true, volume: 0.2 });
         this.forestaSono.play();
-        
+
         this.temaPrincipale = this.sound.add('temaPrincpale', { loop: true, volume: 0.3 });
         this.temaPrincipale.play();
 
@@ -271,16 +273,16 @@ export class Game extends Phaser.Scene {
         this.ultimoOstacoloX = 0;
         this.distanzaMinima = 600;
         this.difficoltaCorrente = 1;
-        
+
         this.time.addEvent({
-            delay: 10000, 
+            delay: 10000,
             callback: this.aumentareDifficolta,
             callbackScope: this,
             loop: true
         });
 
         this.time.addEvent({
-            delay: 950, 
+            delay: 950,
             callback: this.generaMoneteRandom,
             callbackScope: this,
             loop: true
@@ -288,6 +290,14 @@ export class Game extends Phaser.Scene {
 
         this.suoloCollisione = this.physics.add.staticBody(0, this.cameras.main.height - 30, this.cameras.main.width, 20);
         this.physics.add.collider(this.Giocatore, this.suoloCollisione);
+
+        // Ajouter la touche Echap pour mettre en pause
+        this.input.keyboard?.on('keydown-ESC', () => {
+            this.togglePause();
+        });
+
+        // Créer le menu de pause (initialement invisible)
+        this.creerMenuPause();
     }
 
     uovoDiPasqua() {
@@ -303,42 +313,42 @@ export class Game extends Phaser.Scene {
         const distanzaNecessaria = this.distanzaMinima;
         const ultimaPosizione = this.ultimoOstacoloX;
         const posizioneCorrente = this.cameras.main.width;
-        
+
         if (posizioneCorrente - ultimaPosizione < distanzaNecessaria) {
-            return; 
+            return;
         }
-        
-        const probabilitaBase = 0.15; 
+
+        const probabilitaBase = 0.15;
         const probabilitaAttuale = Math.min(probabilitaBase * this.difficoltaCorrente, 0.7);
-        
+
 
         if (Math.random() > probabilitaAttuale) {
-            return; 
+            return;
         }
-        
+
         const probabilitaDoppio = Math.min(0.1 * this.difficoltaCorrente, 0.5);
         const numeroPiege = Math.random() < probabilitaDoppio ? 2 : 1;
-        
+
         this.creaTrampa(this.cameras.main.width);
-        
+
         if (numeroPiege === 2) {
             const distanzaTraTrappe = 300 - (this.velocitaCorrente * 10);
             this.creaTrampa(this.cameras.main.width + distanzaTraTrappe);
         }
-        
+
         this.ultimoOstacoloX = this.cameras.main.width + (numeroPiege === 2 ? 200 - (this.velocitaCorrente * 10) : 0);
-        
+
         this.distanzaMinima = 600 - (this.velocitaCorrente * 50);
         this.distanzaMinima = Math.max(this.distanzaMinima, 300);
     }
 
     creaTrampa(posizioneX: number) {
         const trampa = this.physics.add.sprite(
-            posizioneX, 
+            posizioneX,
             this.cameras.main.height - 57,
             'trappola'
         );
-        
+
         trampa.setFrame(0);
         this.ostacolo.add(trampa);
         trampa.setScale(4);
@@ -359,22 +369,22 @@ export class Game extends Phaser.Scene {
             posizioneY || this.cameras.main.height - 57 - Phaser.Math.Between(50, 200),
             'animaPezzo'
         );
-        
+
         moneta.play('rotate', true);
         this.monete.add(moneta);
-        moneta.setScale(0.3); 
+        moneta.setScale(0.3);
         moneta.setSize(50, 50);
-        
+
         moneta.setImmovable(true);
         moneta.body.setAllowGravity(false);
-        
+
         if (moneta.body) {
             (moneta.body as Phaser.Physics.Arcade.Body).checkCollision.up = false;
             (moneta.body as Phaser.Physics.Arcade.Body).checkCollision.down = false;
             (moneta.body as Phaser.Physics.Arcade.Body).checkCollision.left = false;
             (moneta.body as Phaser.Physics.Arcade.Body).checkCollision.right = false;
         }
-        
+
         moneta.setData('collected', false);
     }
 
@@ -412,15 +422,15 @@ export class Game extends Phaser.Scene {
         }
 
         pezzo.setData('collected', true);
-        
+
         // Play sound effect
         this.sonoPieca.play();
-        
+
         // Add points
         this.punteggio += 50;
         this.punteggioTarget = this.punteggio;
         this.testoPunteggio.setText('' + this.punteggio);
-        
+
         this.tweens.add({
             targets: pezzo,
             y: pezzo.y - 50,
@@ -453,6 +463,12 @@ export class Game extends Phaser.Scene {
     }
     update(delta: number) {
 
+        // Ne pas exécuter la logique de mise à jour si le jeu est en pause
+        if (this.estEnPause) {
+            return;
+        }
+
+
         if (this.vita <= 0) {
             this.velocitaCorrente = 0;
             this.ostacolo.getChildren().forEach((child) => {
@@ -469,7 +485,7 @@ export class Game extends Phaser.Scene {
         }
 
         Phaser.Actions.IncX(this.ostacolo.getChildren(), -this.velocitaCorrente * 3);
-        
+
         if (this.ostacolo.getLength() > 0) {
             let ostacoloPiuLontano = 0;
             this.ostacolo.getChildren().forEach((child) => {
@@ -478,7 +494,7 @@ export class Game extends Phaser.Scene {
                     ostacoloPiuLontano = ostacolo.x;
                 }
             });
-            
+
             if (ostacoloPiuLontano > 0) {
                 this.ultimoOstacoloX = ostacoloPiuLontano;
             } else {
@@ -522,11 +538,11 @@ export class Game extends Phaser.Scene {
         }
 
 
-        
+
 
         this.aggiornaCasse();
 
-        this.aggiornaMonete(); 
+        this.aggiornaMonete();
 
         // Nettoyage des pièces qui sortent de l'écran (à ajouter après aggiornaCasse())
         this.monete.getChildren().forEach((child) => {
@@ -535,7 +551,6 @@ export class Game extends Phaser.Scene {
                 moneta.destroy();
             }
         });
-
     }
 
     calcolaNuovoPunteggioTarget() {
@@ -560,7 +575,7 @@ export class Game extends Phaser.Scene {
         this.forestaSono.stop();
         this.temaPrincipale.stop();
         this.temaMorte.play();
-        
+
         // Sauvegarde le score
         const infoGiocatore = JSON.stringify({
             name: this.nomeUtente,
@@ -573,7 +588,7 @@ export class Game extends Phaser.Scene {
         }
 
         localStorage.setItem(`playerInfo${prossimoIndice}`, infoGiocatore);
-        
+
         this.time.delayedCall(5000, () => {
             this.scene.start('GameOver');
         });
@@ -611,7 +626,7 @@ export class Game extends Phaser.Scene {
         });
         cassa.setImmovable(true);
         cassa.body.allowGravity = false;
-        
+
         if (cassa.body) {
             (cassa.body as Phaser.Physics.Arcade.Body).checkCollision.up = false;
             (cassa.body as Phaser.Physics.Arcade.Body).checkCollision.down = false;
@@ -636,7 +651,7 @@ export class Game extends Phaser.Scene {
         this.monete.getChildren().forEach((child) => {
             const moneta = child as Phaser.Physics.Arcade.Sprite;
             moneta.x -= this.velocitaCorrente * 3; // Même vitesse que les obstacles
-            
+
             if (moneta.x < -moneta.displayWidth) {
                 moneta.destroy();
             }
@@ -727,7 +742,7 @@ export class Game extends Phaser.Scene {
 
         let indiceCorrente = 0;
         const velocitaCiclo = 100;
-        const tempoRotazione = 2000; 
+        const tempoRotazione = 2000;
         const massimiCicli = Math.floor(tempoRotazione / velocitaCiclo);
         let cicloCorrente = 0;
 
@@ -882,18 +897,18 @@ export class Game extends Phaser.Scene {
     }
 
     private generaMoneteRandom(): void {
-        if (Math.random() < 0.9) { 
+        if (Math.random() < 0.9) {
             const numeroPezzi = Phaser.Math.Between(2, 5);
-            
+
             const startX = this.cameras.main.width + 50;
-            
-            const hauteurMin = 80; 
-            const hauteurMax = 350; 
+
+            const hauteurMin = 80;
+            const hauteurMax = 350;
             const hauteur = Phaser.Math.Between(hauteurMin, hauteurMax);
             const y = this.cameras.main.height - hauteur;
-            
+
             const tipoFormazione = Math.random();
-            
+
             if (tipoFormazione < 0.25) {
                 for (let i = 0; i < numeroPezzi; i++) {
                     this.creaMoneta(startX + (i * 40), y);
@@ -906,10 +921,10 @@ export class Game extends Phaser.Scene {
                 for (let i = 0; i < numeroPezzi; i++) {
                     this.creaMoneta(startX + (i * 40), y - (i * 40));
                 }
-            } else if (Math.random() < 0.2) { 
+            } else if (Math.random() < 0.2) {
                 const y = this.cameras.main.height - Phaser.Math.Between(100, 250);
                 const numCoins = Phaser.Math.Between(8, 15); // Longue rangée
-                
+
                 for (let i = 0; i < numCoins; i++) {
                     this.creaMoneta(this.cameras.main.width + 50 + (i * 30), y);
                 }
@@ -923,6 +938,104 @@ export class Game extends Phaser.Scene {
                 }
             }
         }
-        
+
+    }
+
+    private creerMenuPause(): void {
+        // Créer un conteneur pour tous les éléments du menu de pause
+        this.menuPause = this.add.container(this.cameras.main.width / 2, this.cameras.main.height / 2);
+        this.menuPause.setDepth(1000);
+        this.menuPause.setVisible(false);
+
+        // Fond semi-transparent
+        const fond = this.add.rectangle(0, 0, this.cameras.main.width, this.cameras.main.height, 0x000000, 0.7);
+
+        // Texte de pause
+        const textePause = this.add.text(0, -100, 'PAUSE', {
+            fontFamily: 'minecraft',
+            fontSize: '64px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+
+        // Bouton pour reprendre
+        const boutonReprendre = this.add.text(0, 0, 'Reprendre', {
+            fontFamily: 'minecraft',
+            fontSize: '32px',
+            color: '#ffffff'
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+        // Bouton pour quitter
+        const boutonQuitter = this.add.text(0, 80, 'Quitter', {
+            fontFamily: 'minecraft',
+            fontSize: '32px',
+            color: '#ffffff'
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+        // Ajouter des événements aux boutons
+        boutonReprendre.on('pointerdown', () => {
+            this.togglePause();
+        });
+
+        boutonQuitter.on('pointerdown', () => {
+            this.forestaSono.stop();
+            this.temaPrincipale.stop();
+            this.scene.start('MainMenu'); // Assurez-vous que 'MainMenu' est le bon nom de votre scène de menu
+        });
+
+        // Effet de survol pour les boutons
+        [boutonReprendre, boutonQuitter].forEach(bouton => {
+            bouton.on('pointerover', () => {
+                bouton.setStyle({ color: '#ffff00' });
+            });
+
+            bouton.on('pointerout', () => {
+                bouton.setStyle({ color: '#ffffff' });
+            });
+        });
+
+        // Ajouter tous les éléments au conteneur
+        this.menuPause.add([fond, textePause, boutonReprendre, boutonQuitter]);
+    }
+
+    private togglePause(): void {
+        this.estEnPause = !this.estEnPause;
+
+        if (this.estEnPause) {
+            // Mettre le jeu en pause
+            this.physics.pause();
+            this.anims.pauseAll();
+            this.timerIncrementoPunteggio.paused = true;
+
+            // Arrêter tous les timers actifs
+            this.time.paused = true;
+
+            // Réduire le volume de la musique
+            if (this.forestaSono.isPlaying) {
+                this.forestaSono.setVolume(0.05);
+            }
+            if (this.temaPrincipale.isPlaying) {
+                this.temaPrincipale.setVolume(0.05);
+            }
+
+            // Afficher le menu de pause
+            this.menuPause.setVisible(true);
+        } else {
+            // Reprendre le jeu
+            this.physics.resume();
+            this.anims.resumeAll();
+            this.timerIncrementoPunteggio.paused = false;
+
+            // Reprendre tous les timers
+            this.time.paused = false;
+            if (this.forestaSono.isPlaying) {
+                this.forestaSono.setVolume(0.2);
+            }
+            if (this.temaPrincipale.isPlaying) {
+                this.temaPrincipale.setVolume(0.3);
+            }
+
+            // Cacher le menu de pause
+            this.menuPause.setVisible(false);
+        }
     }
 }
