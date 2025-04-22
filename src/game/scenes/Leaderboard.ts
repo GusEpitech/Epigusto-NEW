@@ -48,7 +48,6 @@ export class LeaderBoard extends Scene {
 
         try {
             const playerScores = await this.getScore();
-            console.log(playerScores);
 
             playerScores.sort((a, b) => b.score - a.score);
 
