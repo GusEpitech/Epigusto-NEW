@@ -599,12 +599,7 @@ export class Game extends Phaser.Scene {
             }
         };
 
-        // Call the async function
         saveScore();
-
-        this.time.delayedCall(5000, () => {
-            this.scene.start('GameOver');
-        });
     }
 
     private increaseSpeed(): void {
