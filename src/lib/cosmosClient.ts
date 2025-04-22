@@ -6,7 +6,6 @@ const key = process.env.COSMOSDB_KEY || '';
 const databaseName = process.env.COSMOSDB_DATABASE || '';
 const containerName = process.env.COSMOSDB_CONTAINER || '';
 
-console.log(databaseName);
 // Singleton pattern for CosmosClient
 export const cosmosClient = new CosmosClient({ endpoint, key });
 export const database = cosmosClient.database(databaseName);
