@@ -586,15 +586,19 @@ export class Game extends Phaser.Scene {
                         score: this.score
                     })
                 });
-                
+
                 if (!response.ok) {
                     console.error('Failed to save score to server');
                 }
             } catch (error) {
                 console.error('Error saving score:', error);
+            } finally {
+                this.time.delayedCall(5000, () => {
+                    this.scene.start('GameOver');
+                });
             }
         };
-        
+
         // Call the async function
         saveScore();
 
