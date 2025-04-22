@@ -36,12 +36,12 @@ export class MainMenu extends Scene {
             yoyo: true,
             repeat: -1
         });
-        
+
         this.createNameInput();
         this.loadPlayerName();
         this.events.on('shutdown', this.handleShutdown, this);
         EventBus.emit('current-scene-ready', this);
-        
+
         if (!this.sound.get('menuTheme')) {
             this.sound.play('menuTheme', { loop: true, volume: 0.7 });
         }
@@ -93,6 +93,9 @@ export class MainMenu extends Scene {
             this.handleKeyPress = (e: KeyboardEvent) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
+                    if (!this.nameInput.value.trim()) {
+                        return;
+                    }
                     this.savePlayerName();
                     this.removeInputElements();
                     this.changeScene();
