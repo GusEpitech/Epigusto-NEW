@@ -28,16 +28,20 @@
         "build-nolog": "next build"
     },
     "dependencies": {
+        "@azure/cosmos": "^4.3.0",
         "@vercel/analytics": "^1.5.0",
         "next": "^14.2.26",
         "phaser": "^3.88.2",
         "react": "^18",
-        "react-dom": "^18"
+        "react-dom": "^18",
+        "uuid": "^11.1.0"
     },
     "devDependencies": {
         "@types/node": "^20",
         "@types/react": "^18",
         "@types/react-dom": "^18",
+        "@types/uuid": "^10.0.0",
+        "eslint": "^9.25.1",
         "typescript": "^5"
     }
 }
