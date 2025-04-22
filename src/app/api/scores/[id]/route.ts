@@ -48,3 +48,13 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
         return NextResponse.json({ error: 'Failed to delete score' }, { status: 500 });
     }
 }
+
+export function generateStaticParams() {
+  // Return an array of possible id values
+  // For example:
+  return [
+    { id: '1' },
+    { id: '2' },
+    // Add other IDs you want to pre-render
+  ]
+}
