@@ -1,0 +1,190 @@
+.main {
+	display: flex;
+	flex-direction: column;
+	gap: 3rem;
+	padding: 2rem 1rem 4rem;
+	margin: 0 auto;
+	width: min(1080px, 100%);
+}
+
+.gameSection {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1.5rem;
+}
+
+.gameWrapper {
+	width: 100%;
+	border-radius: 12px;
+	border: 2px solid rgba(255, 255, 255, 0.08);
+	overflow: hidden;
+	box-shadow: 0 14px 35px rgba(0, 0, 0, 0.45);
+}
+
+.gameWrapper > * {
+	display: block;
+}
+
+.creditsButton {
+	padding: 0.85rem 1.8rem;
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+	text-transform: uppercase;
+	font-weight: 700;
+	letter-spacing: 1px;
+	background-image: url("/assets/start_button.png");
+	background-size: 100% 100%;
+	background-repeat: no-repeat;
+	background-color: rgba(255, 255, 255, 0); /* Restore transparent background */
+	color: #ffffff;
+	text-shadow: 1px 2px 0 #000000;
+	transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.creditsButton:hover {
+	transform: translateY(-2px);
+	filter: brightness(1.1);
+}
+
+.teamSection {
+	text-align: center;
+	display: flex;
+	flex-direction: column;
+	gap: 2rem;
+}
+
+.teamTitle {
+	margin: 0;
+	font-size: clamp(2rem, 6vw, 2.6rem);
+	text-transform: uppercase;
+	letter-spacing: 3px;
+}
+
+.teamGrid {
+	display: grid;
+	gap: 1.8rem;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.teamCard {
+	padding: 1.8rem;
+	border-radius: 12px;
+	background: rgba(255, 255, 255, 0.04);
+	border: 2px solid rgba(255, 255, 255, 0.08);
+	box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+
+.teamCard h2 {
+	margin: 0 0 0.5rem;
+	font-size: 1.4rem;
+}
+
+.teamCard p {
+	margin: 0 0 1.1rem;
+	color: rgba(255, 255, 255, 0.75);
+}
+
+.teamLinks {
+	display: flex;
+	gap: 1rem;
+	justify-content: center;
+}
+
+.teamLinks a {
+	color: #ffee93;
+	text-decoration: none;
+	font-weight: 700;
+}
+
+.teamLinks a:hover {
+	text-decoration: underline;
+}
+
+.modalOverlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.8);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 2rem;
+	z-index: 2000;
+}
+
+.modalCard {
+	width: min(720px, 100%);
+	background: rgba(0, 0, 0, 0.95);
+	border: 2px solid rgba(255, 255, 255, 0.15);
+	border-radius: 16px;
+	padding: 2.5rem 2rem;
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.75);
+}
+
+.modalHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 1.5rem;
+}
+
+.modalHeader h2 {
+	margin: 0;
+	font-size: 1.6rem;
+}
+
+.closeButton {
+	background: none;
+	border: none;
+	color: #ffffff;
+	font-size: 2rem;
+	line-height: 1;
+	cursor: pointer;
+	padding: 0.25rem 0.5rem;
+}
+
+.closeButton:hover {
+	color: #ffee93;
+}
+
+.modalContent {
+	color: rgba(255, 255, 255, 0.78);
+	line-height: 1.6;
+}
+
+.modalContent ul {
+	padding-left: 1.2rem;
+	margin: 1.5rem 0;
+}
+
+.modalContent li {
+	margin-bottom: 0.75rem;
+}
+
+.modalContent a {
+	color: #ffee93;
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.modalContent a:hover {
+	text-decoration: underline;
+}
+
+@media (max-width: 700px) {
+	.main {
+		padding: 1.5rem 0.75rem 3rem;
+	}
+
+	.gameWrapper {
+		border-radius: 8px;
+	}
+
+	.modalCard {
+		padding: 2rem 1.5rem;
+	}
+}

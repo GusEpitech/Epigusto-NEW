@@ -6,12 +6,12 @@ export class MainMenu extends Scene {
     background: GameObjects.Image;
     logo: GameObjects.Image;
     logoTween: Phaser.Tweens.Tween | null;
-    nameFormContainer: HTMLFormElement;
-    nameInput: HTMLInputElement;
-    nameInputContainer: HTMLDivElement;
-    submitButton: HTMLButtonElement;
+    nameFormContainer: HTMLFormElement | null = null;
+    nameInput: HTMLInputElement | null = null;
+    nameInputContainer: HTMLDivElement | null = null;
+    submitButton: HTMLButtonElement | null = null;
     playerName: string = '';
-    handleKeyPress: (e: KeyboardEvent) => void;
+    handleKeyPress?: (e: KeyboardEvent) => void;
 
     constructor() {
         super('MainMenu');
@@ -54,68 +54,80 @@ export class MainMenu extends Scene {
     }
 
     createNameInput() {
-        this.nameFormContainer = document.createElement("form")
-        this.nameInputContainer = document.createElement('div');
-        this.nameInputContainer.classList.add("name-input-container")
+    this.nameFormContainer = document.createElement('form');
+    this.nameInputContainer = document.createElement('div');
+    this.nameInputContainer.classList.add('name-input-container');
 
-        this.nameInput = document.createElement('input');
-        this.nameInput.autocomplete = "off"
-        this.nameInput.required = true
-        this.nameInput.type = 'text';
-        this.nameInput.placeholder = 'Enter your name';
-        this.nameInput.id = 'player-name-input';
-        this.nameInput.maxLength = 10;
-        this.nameInput.minLength = 3;
+    this.nameInput = document.createElement('input');
+    this.nameInput.autocomplete = 'off';
+    this.nameInput.required = true;
+    this.nameInput.type = 'text';
+    this.nameInput.placeholder = 'Enter your name';
+    this.nameInput.id = 'player-name-input';
+    this.nameInput.maxLength = 10;
+    this.nameInput.minLength = 3;
 
-        this.submitButton = document.createElement('button');
-        this.submitButton.textContent = 'Start Game';
-        this.submitButton.classList.add("submit-button")
+    this.submitButton = document.createElement('button');
+    this.submitButton.textContent = 'Start Game';
+    this.submitButton.classList.add('submit-button');
 
         const inputTexture = this.textures.get('input-bg');
         const buttonTexture = this.textures.get('button-bg');
 
         const inputAspectRatio = inputTexture.source[0].height / inputTexture.source[0].width;
-        this.nameInput.style.width = `300px`;
-        this.nameInput.style.height = `${Math.round(300 * inputAspectRatio)}px`;
+        if (this.nameInput) {
+            this.nameInput.style.width = `300px`;
+            this.nameInput.style.height = `${Math.round(300 * inputAspectRatio)}px`;
+        }
 
         const buttonAspectRatio = buttonTexture.source[0].height / buttonTexture.source[0].width;
-        this.submitButton.style.width = `300px`;
-        this.submitButton.style.height = `${Math.round(300 * buttonAspectRatio)}px`;
+        if (this.submitButton) {
+            this.submitButton.style.width = `300px`;
+            this.submitButton.style.height = `${Math.round(300 * buttonAspectRatio)}px`;
+        }
 
-        this.submitButton.addEventListener('click', (e) => {
-            if (!this.nameInput.value.trim()) {
+        const triggerStart = () => {
+            const value = this.nameInput?.value.trim() ?? '';
+            if (!value) {
                 return;
             }
-            e.preventDefault();
-            this.savePlayerName();
+            this.savePlayerName(value);
             this.removeInputElements();
             this.changeScene();
-            this.handleKeyPress = (e: KeyboardEvent) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    if (!this.nameInput.value.trim()) {
-                        return;
-                    }
-                    this.savePlayerName();
-                    this.removeInputElements();
-                    this.changeScene();
-                }
-            };
+        };
+
+        if (this.submitButton) {
+            this.submitButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                triggerStart();
+            });
+        }
+
+        this.handleKeyPress = (e: KeyboardEvent) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                triggerStart();
+            }
+        };
+
+        if (this.nameInput && this.handleKeyPress) {
             this.nameInput.addEventListener('keypress', this.handleKeyPress);
-        });
+        }
 
-        this.nameInputContainer.appendChild(this.nameInput);
-        this.nameInputContainer.appendChild(this.submitButton);
-        this.nameFormContainer.appendChild(this.nameInputContainer)
-        document.body.appendChild(this.nameFormContainer);
+        if (this.nameInputContainer && this.nameInput && this.submitButton && this.nameFormContainer) {
+            this.nameInputContainer.appendChild(this.nameInput);
+            this.nameInputContainer.appendChild(this.submitButton);
+            this.nameFormContainer.appendChild(this.nameInputContainer);
+            document.body.appendChild(this.nameFormContainer);
+        }
 
-        if (this.playerName) {
+        if (this.playerName && this.nameInput) {
             this.nameInput.value = this.playerName;
         }
     }
 
-    savePlayerName() {
-        const name = this.nameInput.value.trim();
+    savePlayerName(providedName?: string) {
+        const name = (providedName ?? this.nameInput?.value ?? '').trim();
         if (name) {
             this.playerName = name;
             localStorage.setItem('playerName', name);
@@ -132,18 +144,25 @@ export class MainMenu extends Scene {
     }
 
     handleShutdown() {
-        if (this.nameFormContainer && this.nameFormContainer.parentNode) {
+        if (this.nameFormContainer?.parentNode) {
             this.nameFormContainer.parentNode.removeChild(this.nameFormContainer);
         }
     }
 
     removeInputElements() {
-        if (this.nameFormContainer && this.nameFormContainer.parentNode) {
-            this.submitButton.removeEventListener('click', this.savePlayerName);
+        if (this.nameInput && this.handleKeyPress) {
             this.nameInput.removeEventListener('keypress', this.handleKeyPress);
+        }
 
+        if (this.nameFormContainer?.parentNode) {
             this.nameFormContainer.parentNode.removeChild(this.nameFormContainer);
         }
+
+        this.nameFormContainer = null;
+        this.nameInputContainer = null;
+        this.nameInput = null;
+        this.submitButton = null;
+        this.handleKeyPress = undefined;
     }
 
     changeScene() {

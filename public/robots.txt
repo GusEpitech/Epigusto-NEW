@@ -1,0 +1,5 @@
+# Update the Sitemap directive with your production domain.
+User-agent: *
+Allow: /
+
+Sitemap: https://epigusto.augustin-verissimo.fr/sitemap.xml
